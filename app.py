@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 from fastapi import FastAPI,UploadFile,File
 from models.request_models import QueryRequest
@@ -10,11 +11,22 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from services.query_service import QueryService
 from database.query_logger import QueryLogger
+from services.chart_service import ChartService
 from dotenv import load_dotenv
+
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 app = FastAPI(title="Universal Data Agent",version="1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5174"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 UPLOAD_DIR = "uploads"
 
@@ -73,19 +85,31 @@ def get_data():
 @app.post("/upload")
 async def upload(file:UploadFile=File(...)):
 
+    print("step 1")
+
     file_path = os.path.join(
         UPLOAD_DIR,
         file.filename
     )
 
+    print("step 2")
+
     with open(file_path,"wb") as f:
         f.write(await file.read())
 
+    print("step 3")
+
     df = FileLoader.load(file_path=file_path)
+
+    print("step 4")
 
     table_name = SchemaManager.get_table_name(file.filename)
 
+    print("step 5")
+
     db.save_dataframe(df=df,table_name=table_name)
+
+    print("step 6")
 
     app_state["tables"][table_name]=df
 
@@ -160,6 +184,15 @@ def query(request:QueryRequest): ##pydantic checker
 
         sql_query_result = query_service.run_query(cleaned_sql_query)
 
+        result_df = pd.DataFrame(
+            sql_query_result["rows"],
+            columns=sql_query_result["columns"]
+        )
+
+        chart_info = ChartService.suggest_chart(
+            result_df
+        )
+
         logger.log(
             request.question,
             cleaned_sql_query,
@@ -169,13 +202,14 @@ def query(request:QueryRequest): ##pydantic checker
 
         final_result = query_service.generate_answer(
     question=request.question,
-    result=sql_query_result[:20]
+    result=sql_query_result["rows"][:20]
 )
         return {
         "question": request.question,
         "sql": cleaned_sql_query,
-        "result": str(sql_query_result),
-        "answer": final_result
+        "result": (sql_query_result),
+        "answer": final_result,
+        "chart":chart_info
         }
     
     except Exception as e:

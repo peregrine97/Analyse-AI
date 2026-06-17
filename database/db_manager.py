@@ -11,12 +11,24 @@ class DatabaseManager:
         )
         conn.close()
 
-    def run_query(self,query):
+    def run_query(self, query):
+
         conn = sqlite3.connect(self.db_path)
+
         cursor = conn.cursor()
+
         cursor.execute(query)
 
-        result = cursor.fetchall()
+        rows = cursor.fetchall()
+
+        columns = [
+            desc[0]
+            for desc in cursor.description
+        ]
+
         conn.close()
 
-        return result
+        return {
+            "columns": columns,
+            "rows": rows
+        }
