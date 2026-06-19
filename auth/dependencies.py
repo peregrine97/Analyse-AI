@@ -14,41 +14,37 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 
 def get_current_user(
-    token: str = Depends(
-        oauth2_scheme
-    )
+    token: str = Depends(oauth2_scheme)
 ):
-
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials"
-    )
+    print("TOKEN RECEIVED:", token)
 
     try:
-
         payload = jwt.decode(
             token,
             SECRET_KEY,
             algorithms=[ALGORITHM]
         )
 
-        user_id = payload.get(
-            "sub"
-        )
+        print("PAYLOAD:", payload)
 
-        email = payload.get(
-            "email"
-        )
+        user_id = payload.get("sub")
+        email = payload.get("email")
 
         if user_id is None:
-
-            raise credentials_exception
+            print("SUB IS NONE")
+            raise HTTPException(
+                status_code=401,
+                detail="Could not validate credentials"
+            )
 
         return {
             "id": int(user_id),
             "email": email
         }
 
-    except JWTError:
-
-        raise credentials_exception
+    except Exception as e:
+        print("JWT ERROR:", str(e))
+        raise HTTPException(
+            status_code=401,
+            detail="Could not validate credentials"
+        )
