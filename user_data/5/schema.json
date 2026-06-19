@@ -1,1 +1,0 @@
-{"schema": "\nTable: customers\n\nColumns:\ncustomer_id\ncustomer_name\ncity\n\n\n\nTable: orders\n\nColumns:\norder_id\ncustomer_id\nproduct_id\nquantity\n\n\n\nTable: products\n\nColumns:\nproduct_id\nproduct_name\nprice\n\n\nRelationships:\ncustomers.customer_id \u2194 orders.customer_id\norders.product_id \u2194 products.product_id"}
