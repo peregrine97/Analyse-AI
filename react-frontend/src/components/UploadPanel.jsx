@@ -3,12 +3,12 @@ import api from "../services/api";
 
 function UploadPanel({ setTables }) {
 
-    const [file, setFile] = useState(null);
+    const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const handleUpload = async () => {
 
-        if (!file) return;
+        if (files.length === 0) return;
 
         try {
 
@@ -16,10 +16,14 @@ function UploadPanel({ setTables }) {
 
             const formData = new FormData();
 
-            formData.append(
-                "file",
-                file
-            );
+            files.forEach((file) => {
+
+                formData.append(
+                    "files",
+                    file
+                );
+
+            });
 
             await api.post(
                 "/upload",
@@ -38,7 +42,7 @@ function UploadPanel({ setTables }) {
                 response.data.tables
             );
 
-            setFile(null);
+            setFiles([]);
 
         } catch (err) {
 
@@ -52,6 +56,50 @@ function UploadPanel({ setTables }) {
             setLoading(false);
 
         }
+
+    };
+
+    const handleClearWorkspace = async () => {
+
+        const confirmed = window.confirm(
+            "This will delete all uploaded datasets, schema, and history. Continue?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+
+            setLoading(true);
+
+            await api.delete(
+                "/clear-workspace"
+            );
+
+            setTables([]);
+
+            setFiles([]);
+
+            alert(
+                "Workspace cleared successfully."
+            );
+
+        } catch (err) {
+
+            console.error(
+                "Failed to clear workspace:",
+                err
+            );
+
+            alert(
+                "Failed to clear workspace."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
     };
 
     return (
@@ -84,19 +132,20 @@ function UploadPanel({ setTables }) {
 
                 <div className="flex items-center gap-3">
 
-                    {/* Hidden File Input */}
-
                     <input
                         id="file-upload"
                         type="file"
                         accept=".csv"
+                        multiple
                         onChange={(e) =>
-                            setFile(e.target.files[0])
+                            setFiles(
+                                Array.from(
+                                    e.target.files
+                                )
+                            )
                         }
                         className="hidden"
                     />
-
-                    {/* Choose File */}
 
                     <label
                         htmlFor="file-upload"
@@ -115,11 +164,9 @@ function UploadPanel({ setTables }) {
                         📁 Choose File
                     </label>
 
-                    {/* Upload */}
-
                     <button
                         onClick={handleUpload}
-                        disabled={!file || loading}
+                        disabled={files.length === 0 || loading}
                         className="
                         px-5
                         py-2
@@ -137,29 +184,52 @@ function UploadPanel({ setTables }) {
                             : "Upload"}
                     </button>
 
+                    <button
+                        onClick={handleClearWorkspace}
+                        disabled={loading}
+                        className="
+                        px-5
+                        py-2
+                        bg-red-600
+                        text-white
+                        rounded-lg
+                        hover:bg-red-700
+                        transition-all
+                        disabled:bg-slate-400
+                        disabled:cursor-not-allowed
+                        "
+                    >
+                        Clear Workspace
+                    </button>
+
                 </div>
 
             </div>
 
-            {file && (
+            {files.length > 0 && (
 
-                <div
-                    className="
-                    mt-4
-                    inline-flex
-                    items-center
-                    gap-2
-                    px-3
-                    py-2
-                    rounded-lg
-                    bg-green-50
-                    border
-                    border-green-200
-                    text-green-700
-                    text-sm
-                    "
-                >
-                    ✅ {file.name}
+                <div className="mt-4 space-y-2">
+
+                    {files.map((file) => (
+
+                        <div
+                            key={file.name}
+                            className="
+                            px-3
+                            py-2
+                            bg-green-50
+                            border
+                            border-green-200
+                            rounded-lg
+                            text-green-700
+                            text-sm
+                            "
+                        >
+                            ✅ {file.name}
+                        </div>
+
+                    ))}
+
                 </div>
 
             )}

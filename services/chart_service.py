@@ -20,13 +20,17 @@ class ChartService:
             return {
                 "chart_type": "bar",
                 "x": cols[0],
-                "y": cols[1]
+                "y": cols[1],
+                "x_label": cols[0].replace("_", " ").title(),
+                "y_label": cols[1].replace("_", " ").title()
             }
         elif first_is_num and not second_is_num:
             return {
                 "chart_type": "bar",
                 "x": cols[1],
-                "y": cols[0]
+                "y": cols[0],
+                "x_label": cols[1].replace("_", " ").title(),
+                "y_label": cols[0].replace("_", " ").title()
             }
         
         elif first_is_num and second_is_num:
@@ -34,7 +38,9 @@ class ChartService:
             return {
                 "chart_type": "line",
                 "x": cols[0],
-                "y": cols[1]
+                "y": cols[1],
+                "x_label": cols[0].replace("_", " ").title(),
+                "y_label": cols[1].replace("_", " ").title()
             }
         
         else:

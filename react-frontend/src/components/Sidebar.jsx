@@ -1,17 +1,20 @@
-function Sidebar({ tables, setSelectedTable, selectedTable }) {
+import HistoryPanel from "./HistoryPanel";
+
+function Sidebar({ tables, setSelectedTable, selectedTable, setQueryResult, scrollToResults }) {
 
     return (
 
         <div
             className="
-            w-72
-            bg-white
-            border-r
-            border-slate-200
-            shadow-sm
-            flex
-            flex-col
-            "
+    w-80
+    bg-white
+    border-r
+    border-slate-200
+    shadow-sm
+    flex
+    flex-col
+    overflow-y-auto
+    "
         >
 
             {/* HEADER */}
@@ -70,34 +73,40 @@ function Sidebar({ tables, setSelectedTable, selectedTable }) {
                             key={table}
                             onClick={() => setSelectedTable(table)}
                             className={`
-                                w-full
-                                text-left
-                                p-3
-                                rounded-xl
-                                border
-                                transition-all
-                                duration-200
+                w-full
+                text-left
+                p-3
+                rounded-xl
+                border
+                transition-all
+                duration-200
 
-                                ${selectedTable === table
+                ${selectedTable === table
                                     ? "bg-blue-600 text-white border-blue-600 shadow-sm"
                                     : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-blue-50 hover:border-blue-300"
                                 }
-                            `}
+            `}
                         >
-
                             <div className="truncate">
                                 {table}
                             </div>
-
                         </button>
 
                     ))}
 
                 </div>
 
+                <div className="mt-10">
+
+                    <HistoryPanel
+                        setQueryResult={setQueryResult}
+                        scrollToResults={scrollToResults}
+                    />
+
+                </div>
             </div>
 
-        </div>
+        </div >
 
     );
 }

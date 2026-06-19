@@ -1,26 +1,94 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import api from "../services/api";
+
+import { useAuth } from "../context/AuthContext";
 
 import Sidebar from "../components/Sidebar";
 import UploadPanel from "../components/UploadPanel";
 import QueryPanel from "../components/QueryPanel";
 import TablePreview from "../components/TablePreview";
 import ResultPanel from "../components/ResultPanel";
+import DatasetInsights from "../components/DatasetInsights";
+import DatasetOverview from "../components/DatasetOverview";
 
 function Dashboard() {
 
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(null);
     const [queryResult, setQueryResult] = useState(null);
+    const [question, setQuestion] = useState("");
+
+    const resultRef = useRef(null);
+
+    const navigate = useNavigate();
+
+    const { user, logout } = useAuth();
+
+    useEffect(() => {
+
+        const loadTables = async () => {
+
+            try {
+
+                const response = await api.get(
+                    "/tables"
+                );
+
+                setTables(
+                    response.data.tables || []
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load tables",
+                    error
+                );
+
+            }
+
+        };
+
+        loadTables();
+
+    }, []);
+
+    const handleLogout = () => {
+
+        logout();
+
+        navigate(
+            "/login"
+        );
+
+    };
+
+    const scrollToResults = () => {
+
+        resultRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    };
 
     return (
 
         <div className="min-h-screen flex bg-slate-100">
 
+            {/* SIDEBAR */}
+
             <Sidebar
                 tables={tables}
                 selectedTable={selectedTable}
                 setSelectedTable={setSelectedTable}
+                setQueryResult={setQueryResult}
+                scrollToResults={scrollToResults}
             />
+
+            {/* MAIN CONTENT */}
 
             <div className="flex-1 overflow-auto">
 
@@ -41,13 +109,73 @@ function Dashboard() {
                         "
                     >
 
-                        <h1 className="text-5xl font-bold mb-3">
-                            Analyse AI
-                        </h1>
+                        <div className="flex justify-between items-start">
 
-                        <p className="text-blue-100 text-lg">
-                            Query your datasets using natural language and generate insights instantly.
-                        </p>
+                            <div>
+
+                                <h1 className="text-5xl font-bold mb-3">
+                                    Analyse AI
+                                </h1>
+
+                                <p className="text-blue-100 text-lg">
+                                    Query your datasets using natural language and generate insights instantly.
+                                </p>
+
+                            </div>
+
+                            {user && (
+
+                                <div className="flex items-center gap-4">
+
+                                    <div
+                                        className="
+                                        w-14
+                                        h-14
+                                        rounded-full
+                                        bg-white/20
+                                        flex
+                                        items-center
+                                        justify-center
+                                        text-xl
+                                        font-bold
+                                        "
+                                    >
+                                        {user.username[0].toUpperCase()}
+                                    </div>
+
+                                    <div>
+
+                                        <div className="font-semibold text-lg">
+                                            {user.username}
+                                        </div>
+
+                                        <div className="text-blue-100 text-sm">
+                                            {user.email}
+                                        </div>
+
+                                        <button
+                                            onClick={handleLogout}
+                                            className="
+                                            mt-2
+                                            px-3
+                                            py-1
+                                            text-sm
+                                            rounded-lg
+                                            bg-white/20
+                                            hover:bg-white/30
+                                            transition
+                                            "
+                                        >
+                                            Logout
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            )}
+
+                        </div>
 
                     </div>
 
@@ -65,6 +193,7 @@ function Dashboard() {
                             shadow-sm
                             "
                         >
+
                             <p className="text-slate-500 text-sm">
                                 Uploaded Tables
                             </p>
@@ -85,6 +214,7 @@ function Dashboard() {
                             shadow-sm
                             "
                         >
+
                             <p className="text-slate-500 text-sm">
                                 Selected Dataset
                             </p>
@@ -105,6 +235,7 @@ function Dashboard() {
                             shadow-sm
                             "
                         >
+
                             <p className="text-slate-500 text-sm">
                                 Query Status
                             </p>
@@ -117,15 +248,11 @@ function Dashboard() {
 
                     </div>
 
-                    {/* SHOW UPLOAD ONLY WHEN NO TABLES EXIST */}
+                    {/* UPLOAD */}
 
-                    {tables.length === 0 && (
-
-                        <UploadPanel
-                            setTables={setTables}
-                        />
-
-                    )}
+                    <UploadPanel
+                        setTables={setTables}
+                    />
 
                     {/* TABLE PREVIEW */}
 
@@ -133,17 +260,39 @@ function Dashboard() {
                         selectedTable={selectedTable}
                     />
 
+                    {/* DATASET OVERVIEW */}
+
+                    {tables.length > 0 && (
+                        <DatasetOverview />
+                    )}
+
+                    {/* DATASET INSIGHTS */}
+
+                    {tables.length > 0 && (
+
+                        <DatasetInsights
+                            setQuestion={setQuestion}
+                        />
+
+                    )}
+
                     {/* QUERY PANEL */}
 
                     <QueryPanel
+                        question={question}
+                        setQuestion={setQuestion}
                         setQueryResult={setQueryResult}
                     />
 
                     {/* RESULTS */}
 
-                    <ResultPanel
-                        queryResult={queryResult}
-                    />
+                    <div ref={resultRef}>
+
+                        <ResultPanel
+                            queryResult={queryResult}
+                        />
+
+                    </div>
 
                 </div>
 
@@ -152,6 +301,7 @@ function Dashboard() {
         </div>
 
     );
+
 }
 
 export default Dashboard;

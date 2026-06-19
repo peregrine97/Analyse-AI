@@ -1,9 +1,12 @@
 import { useState } from "react";
 import api from "../services/api";
 
-function QueryPanel({ setQueryResult }) {
+function QueryPanel({
+    question,
+    setQuestion,
+    setQueryResult
+}) {
 
-    const [question, setQuestion] = useState("");
     const [loading, setLoading] = useState(false);
 
     const askQuestion = async () => {
@@ -41,7 +44,10 @@ function QueryPanel({ setQueryResult }) {
 
     const handleKeyDown = (e) => {
 
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (
+            e.key === "Enter" &&
+            !e.shiftKey
+        ) {
 
             e.preventDefault();
 
@@ -63,10 +69,12 @@ function QueryPanel({ setQueryResult }) {
             "
         >
 
+            {/* HEADER */}
+
             <div className="mb-5">
 
                 <h3 className="text-2xl font-bold text-slate-900">
-                    Ask Your Data
+                    Ask Your Question
                 </h3>
 
                 <p className="text-slate-500 mt-1">
@@ -75,10 +83,14 @@ function QueryPanel({ setQueryResult }) {
 
             </div>
 
+            {/* QUESTION BOX */}
+
             <textarea
                 value={question}
                 onChange={(e) =>
-                    setQuestion(e.target.value)
+                    setQuestion(
+                        e.target.value
+                    )
                 }
                 onKeyDown={handleKeyDown}
                 className="
@@ -99,6 +111,8 @@ function QueryPanel({ setQueryResult }) {
                 placeholder="Example: Which states generated the highest revenue?"
             />
 
+            {/* ACTIONS */}
+
             <div className="flex justify-between items-center mt-4">
 
                 <p className="text-sm text-slate-500">
@@ -107,7 +121,10 @@ function QueryPanel({ setQueryResult }) {
 
                 <button
                     onClick={askQuestion}
-                    disabled={loading}
+                    disabled={
+                        loading ||
+                        !question.trim()
+                    }
                     className="
                     px-6
                     py-3

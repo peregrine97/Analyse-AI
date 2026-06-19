@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+import json
 
 class QueryLogger : 
     def __init__(self,db_path = "temp.db"):
@@ -55,7 +56,13 @@ class QueryLogger :
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT *
+            SELECT
+                id,
+                timestamp,
+                question,
+                sql_query,
+                result,
+                success
             FROM query_history
             ORDER BY id DESC
         """)
@@ -64,7 +71,27 @@ class QueryLogger :
 
         conn.close()
 
-        return rows
+        history = []
+
+        for row in rows:
+
+            try:
+                result_data = json.loads(row[4])
+            except:
+                result_data = {
+        "error": "Legacy history entry"
+    }
+
+            history.append({
+                "id": row[0],
+                "timestamp": row[1],
+                "question": row[2],
+                "sql_query": row[3],
+                "result": result_data,
+                "success": bool(row[5])
+            })
+
+        return history
         
 
 

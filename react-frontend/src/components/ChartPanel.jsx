@@ -103,29 +103,27 @@ function ChartPanel({ queryResult }) {
         scales: {
 
             x: {
-
-                ticks: {
+                title: {
+                    display: true,
+                    text: chartInfo.x_label,
                     color: "#334155",
-                    maxRotation: 45,
-                    minRotation: 45
+                    font: {
+                        size: 14,
+                        weight: "bold"
+                    }
                 },
-
-                grid: {
-                    color: "#e2e8f0"
-                }
-
             },
 
             y: {
-
-                ticks: {
-                    color: "#334155"
+                title: {
+                    display: true,
+                    text: chartInfo.y_label,
+                    color: "#334155",
+                    font: {
+                        size: 14,
+                        weight: "bold"
+                    }
                 },
-
-                grid: {
-                    color: "#e2e8f0"
-                }
-
             }
 
         }

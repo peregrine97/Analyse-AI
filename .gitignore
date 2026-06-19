@@ -14,10 +14,18 @@ wheels/
 
 # Databases
 *.db
+*.sqlite
+*.sqlite3
+
+# User workspace data
+user_data/
 
 # Uploaded files
 uploads/
 uploads_trial/
+
+# Node
+node_modules/
 
 # OS files
 .DS_Store
